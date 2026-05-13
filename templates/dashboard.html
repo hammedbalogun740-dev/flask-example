@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f4f4f0;
+      --bg-tertiary: #ededea;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6b68;
+      --border: rgba(0,0,0,0.12);
+      --border-md: rgba(0,0,0,0.2);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1e1e1c;
+        --bg-secondary: #2a2a27;
+        --bg-tertiary: #141412;
+        --text-primary: #f0efe8;
+        --text-secondary: #a0a09a;
+        --border: rgba(255,255,255,0.1);
+        --border-md: rgba(255,255,255,0.2);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 220px; height: 100vh;
+      background: var(--bg-primary);
+      border-right: 0.5px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.5rem 1rem;
+      z-index: 100;
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-logo {
+      font-size: 16px; font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .sidebar-logo svg { width: 22px; height: 22px; }
+
+    .nav-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+      color: var(--text-secondary); text-transform: uppercase;
+      margin: 1rem 0 0.5rem 0.5rem;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: var(--radius-md);
+      font-size: 13px; color: var(--text-secondary);
+      cursor: pointer; transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    .nav-item.active { background: var(--bg-secondary); color: var(--text-primary); font-weight: 500; }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    .main {
+      margin-left: 220px;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px;
+    }
+
+    .topbar-left h1 { font-size: 18px; font-weight: 500; }
+    .topbar-left p  { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-md);
+      background: var(--bg-primary); color: var(--text-primary);
+      font-size: 13px; cursor: pointer; transition: background 0.15s;
+    }
+    .btn:hover { background: var(--bg-secondary); }
+    .btn svg { width: 14px; height: 14px; }
+
+    .btn-primary {
+      background: var(--text-primary); color: var(--bg-primary);
+      border-color: transparent;
+    }
+    .btn-primary:hover { opacity: 0.85; background: var(--text-primary); }
+
+    /* ── Metric cards ── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 1.5rem;
+    }
+
+    .metric {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+    }
+
+    .metric-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+
+    .metric-label { font-size: 12px; color: var(--text-secondary); }
+    .metric-icon {
+      width: 28px; height: 28px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .metric-icon svg { width: 14px; height: 14px; }
+
+    .metric-value { font-size: 24px; font-weight: 500; line-height: 1.1; }
+    .metric-change { font-size: 12px; margin-top: 6px; }
+    .up   { color: #1D9E75; }
+    .down { color: #E24B4A; }
+
+    /* ── Charts row ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px; margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+    }
+
+    .card-head {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 1rem;
+    }
+    .card-title { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;
+    }
+    .legend span {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--text-secondary);
+    }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    .chart-wrap { position: relative; width: 100%; }
+
+    /* ── Progress bars ── */
+    .goal-list { display: flex; flex-direction: column; gap: 14px; }
+    .goal-row {}
+    .goal-meta {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;
+    }
+    .goal-track {
+      background: var(--bg-secondary); border-radius: 20px; height: 6px;
+    }
+    .goal-fill { border-radius: 20px; height: 6px; transition: width 1s ease; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 8px 10px;
+      font-size: 11px; font-weight: 500; color: var(--text-secondary);
+      border-bottom: 0.5px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 10px 10px;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text-primary);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-secondary); }
+
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500; margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 20px; font-size: 11px; font-weight: 500;
+    }
+    .badge-green { background: #EAF3DE; color: #3B6D11; }
+    .badge-amber { background: #FAEEDA; color: #854F0B; }
+    .badge-red   { background: #FCEBEB; color: #A32D2D; }
+
+    @media (prefers-color-scheme: dark) {
+      .badge-green { background: #27500A; color: #C0DD97; }
+      .badge-amber { background: #633806; color: #FAC775; }
+      .badge-red   { background: #791F1F; color: #F7C1C1; }
+    }
+
+    /* ── Hamburger (mobile) ── */
+    .hamburger {
+      display: none; background: none; border: none;
+      cursor: pointer; padding: 6px; color: var(--text-primary);
+    }
+    .hamburger svg { width: 20px; height: 20px; }
+
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 99;
+    }
+
+    /* ── Responsive breakpoints ── */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 200px;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .overlay.open { display: block; }
+      .main { margin-left: 0; padding: 1rem; }
+      .hamburger { display: flex; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .metric-value { font-size: 20px; }
+      .btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  
+
+
+
+
+
+<!-- Overlay for mobile sidebar -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashify
+  </div>
+
+  <span class="nav-label">Main</span>
+  <a class="nav-item active" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Overview
+  </a>
+  <a class="nav-item" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analytics
+  </a>
+  <a class="nav-item" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Orders
+  </a>
+  <a class="nav-item" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Customers
+  </a>
+
+  <span class="nav-label">Settings</span>
+  <a class="nav-item" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    Settings
+  </a>
+  <a class="nav-item" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Alerts
+  </a>
+
+  {% if not current_user.is_authenticated %}
+    <a class="nav-item" href="{{url_for('register')}}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Register
+  </a>
+
+    <a class="nav-item" href="{{url_for('login')}}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Login
+  </a>
+  {% else %}
+    <a class="nav-item" href="{{url_for('logout')}}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Logout
+  {% endif %}
+
+
+</nav>
+
+<!-- Main content -->
+<main class="main">
+  {% with messages = get_flashed_messages(with_categories=True) %}
+      {% for category, message in messages %}
+            <div class="alert alert-{{category}} w-50 mx-auto">
+                <button type="button" class="btn-close" data-bs-dismis="alert" aria-label="close"></button>
+                {{message}}
+            </div>
+       {% endfor %}
+  {% endwith %}
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-left">
+        <h1>Analytics Overview</h1>
+        <p>April 2026 &mdash; All metrics</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Apr 2026</span>
+      </button>
+      <button class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric cards -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-header">
+        <span class="metric-label">Total Revenue</span>
+        <div class="metric-icon" style="background:#E6F1FB">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#378ADD" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+      </div>
+      <div class="metric-value">$84,230</div>
+      <div class="metric-change up">▲ 12.4% vs last month</div>
+    </div>
+    <div class="metric">
+      <div class="metric-header">
+        <span class="metric-label">Active Users</span>
+        <div class="metric-icon" style="background:#EEEDFE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+      </div>
+      <div class="metric-value">24,581</div>
+      <div class="metric-change up">▲ 8.1% vs last month</div>
+    </div>
+    <div class="metric">
+      <div class="metric-header">
+        <span class="metric-label">New Orders</span>
+        <div class="metric-icon" style="background:#E1F5EE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+      </div>
+      <div class="metric-value">1,342</div>
+      <div class="metric-change down">▼ 2.3% vs last month</div>
+    </div>
+    <div class="metric">
+      <div class="metric-header">
+        <span class="metric-label">Conversion</span>
+        <div class="metric-icon" style="background:#FAECE7">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#D85A30" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+      </div>
+      <div class="metric-value">3.6%</div>
+      <div class="metric-change up">▲ 0.4% vs last month</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Monthly Revenue</span>
+      </div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#378ADD"></span>2026</span>
+        <span><span class="legend-dot" style="background:#9FE1CB"></span>2025</span>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="revenueChart" role="img" aria-label="Monthly revenue comparison 2025 vs 2026">Revenue trending upward in 2026.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Traffic by Channel</span>
+      </div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#534AB7"></span>Organic 42%</span>
+        <span><span class="legend-dot" style="background:#378ADD"></span>Paid 28%</span>
+        <span><span class="legend-dot" style="background:#1D9E75"></span>Social 18%</span>
+        <span><span class="legend-dot" style="background:#D85A30"></span>Direct 12%</span>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="channelChart" role="img" aria-label="Donut: Organic 42%, Paid 28%, Social 18%, Direct 12%">Organic traffic leads at 42%.</canvas>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Charts row 2 -->
+  <div class="charts-grid" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Weekly Active Users</span>
+      </div>
+      <div class="chart-wrap" style="height:160px">
+        <canvas id="usersChart" role="img" aria-label="Area chart of weekly active users">Activity peaks mid-week.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Goal Completion</span>
+      </div>
+      <div class="goal-list">
+        <div class="goal-row">
+          <div class="goal-meta"><span>Revenue target</span><span>84%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:84%;background:#378ADD"></div></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-meta"><span>User growth</span><span>61%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:61%;background:#534AB7"></div></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-meta"><span>Order volume</span><span>47%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:47%;background:#1D9E75"></div></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-meta"><span>Retention rate</span><span>92%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:92%;background:#D85A30"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions table -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Recent Transactions</span>
+      <button class="btn" style="font-size:12px;padding:5px 10px">View all</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="avatar" style="background:#E6F1FB;color:#185FA5">AO</span>Amara Osei</td>
+            <td>Pro Plan</td><td>$299</td><td>Apr 22</td>
+            <td><span class="badge badge-green">Paid</span></td>
+          </tr>
+          <tr>
+            <td><span class="avatar" style="background:#EEEDFE;color:#534AB7">CN</span>Chidi Nwosu</td>
+            <td>Starter</td><td>$49</td><td>Apr 21</td>
+            <td><span class="badge badge-green">Paid</span></td>
+          </tr>
+          <tr>
+            <td><span class="avatar" style="background:#E1F5EE;color:#0F6E56">FA</span>Fatima Al-Rashid</td>
+            <td>Enterprise</td><td>$1,200</td><td>Apr 20</td>
+            <td><span class="badge badge-amber">Pending</span></td>
+          </tr>
+          <tr>
+            <td><span class="avatar" style="background:#FAEEDA;color:#854F0B">IP</span>Ivan Petrov</td>
+            <td>Pro Plan</td><td>$299</td><td>Apr 19</td>
+            <td><span class="badge badge-green">Paid</span></td>
+          </tr>
+          <tr>
+            <td><span class="avatar" style="background:#FCEBEB;color:#A32D2D">LM</span>Lena Müller</td>
+            <td>Add-on</td><td>$79</td><td>Apr 18</td>
+            <td><span class="badge badge-red">Failed</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  /* sidebar toggle */
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  /* chart colors */
+  const isDark = matchMedia('(prefers-color-scheme:dark)').matches;
+  const gridColor  = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+  const labelColor = isDark ? '#a0a09a' : '#6b6b68';
+
+  /* revenue bar chart */
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets: [
+        { label:'2026', data:[52,61,58,84,null,null,null,null,null,null,null,null], backgroundColor:'#378ADD', borderRadius:3 },
+        { label:'2025', data:[41,55,49,62,70,65,72,68,80,75,78,91],               backgroundColor:'#9FE1CB', borderRadius:3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false } },
+      scales: {
+        x: { grid:{ color:gridColor }, ticks:{ color:labelColor, font:{size:11}, maxRotation:0 } },
+        y: { grid:{ color:gridColor }, ticks:{ color:labelColor, font:{size:11}, callback: v => '$'+v+'k' } }
+      }
+    }
+  });
+
+  /* donut chart */
+  new Chart(document.getElementById('channelChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Organic','Paid','Social','Direct'],
+      datasets: [{ data:[42,28,18,12], backgroundColor:['#534AB7','#378ADD','#1D9E75','#D85A30'], borderWidth:0, hoverOffset:4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: c => c.label+': '+c.raw+'%' } } }
+    }
+  });
+
+  /* area chart */
+  new Chart(document.getElementById('usersChart'), {
+    type: 'line',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [{
+        label: 'Users',
+        data: [3200,4100,5800,5200,6100,4300,3700],
+        borderColor: '#534AB7', backgroundColor: 'rgba(83,74,183,0.08)',
+        fill: true, tension: 0.4, borderWidth: 2,
+        pointRadius: 3, pointBackgroundColor: '#534AB7'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { grid:{ color:gridColor }, ticks:{ color:labelColor, font:{size:11} } },
+        y: { grid:{ color:gridColor }, ticks:{ color:labelColor, font:{size:11}, callback: v => v>=1000 ? (v/1000).toFixed(1)+'k' : v } }
+      }
+    }
+  });
+</script>
+</body>
+</html>

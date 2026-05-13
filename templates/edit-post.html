@@ -1,0 +1,92 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+{% extends 'base.html'%}
+{% block content%}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 60px;
+    }
+
+    .form-card {
+        background: #fff;
+        padding: 30px;
+        width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-title {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-input,
+    .form-textarea {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .form-textarea {
+        height: 120px;
+        resize: none;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #007bff;
+    }
+
+    .form-btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background: #007bff;
+        color: #fff;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .form-btn:hover {
+        background: #0056b3;
+    }
+</style>
+
+<div class="form-container">
+    <form action="" method="post" class="form-card">
+        {{ form.csrf_token }}
+
+    
+
+        <h2 class="form-title">Update Post</h2>
+
+        <div class="form-group">
+            {{ form.title.label }}
+            {{ form.title(class="form-input") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.body.label }}
+            {{ form.body(class="form-textarea") }}
+        </div>
+
+        <button type="submit" class="form-btn">Add</button>
+    </form>
+</div>
+{% endblock %}

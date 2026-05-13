@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #4facfe;
+            outline: none;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+        }
+
+        .error-message {
+            color: red;
+            font-size: 12px;
+        }
+
+        input[type="submit"] {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background: #00c6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <form method="post">
+        <h2>Registered</h2>
+
+        {{ form.csrf_token }}
+
+        
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username() }}
+            {% for error in form.username.errors %} 
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email() }}
+            {% for error in form.email.errors %} 
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password() }}
+            {% for error in form.password.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        
+
+        <input type="submit" value="register">
+    </form>
+
+</body>
+</html>
