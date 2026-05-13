@@ -144,6 +144,9 @@ def register():
             otp=token.token
         )
         
+        print(app.config['MAIL_USERNAME'])
+        print(app.config['MAIL_PASSWORD'])
+
         msg.html = html_text
         mail.send(msg)
 
