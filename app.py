@@ -26,6 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URI")
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_TIMEOUT'] = 10
 app.config['MAIL_USERNAME'] = os.getenv("DEFAULT_EMAIL")
 app.config['MAIL_PASSWORD'] = os.getenv("EMAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = "hammedbalogun740@gmail.com"
@@ -129,8 +130,8 @@ def register():
             user=user
         )
 
-        db.session.add_all([user, token])
-        db.session.commit()
+        # db.session.add_all([user, token])
+        # db.session.commit()
 
         msg = Message(
             subject=f"Verify Account: Your OTP is {_new_otp}",
@@ -157,6 +158,8 @@ def register():
         else:
             session['user_being_verified'] = user.id
             
+            db.session.add_all([user, token])
+            db.session.commit()
             flash("Sign up success. Please verifiy your email", category="success")
             return redirect(url_for('verify_otp'))
 
