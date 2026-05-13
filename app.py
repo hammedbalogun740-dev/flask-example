@@ -153,7 +153,7 @@ def register():
             mail.send(msg)
         except Exception as e:
             print("Failed to send email")
-            print(e)
+            print("Exception", e)
             flash("An error occured while sendng the email", category='danger')
         else:
             session['user_being_verified'] = user.id
